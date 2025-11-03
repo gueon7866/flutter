@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>기숙사 대시보드 (HTML 미리보기)</title>
+
+  <!-- Google Fonts & Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <style>
+    :root{
+      /* AppColors 매핑 */
+      --primary:#2C3E50;       /* textPrimary/navy */
+      --accent:#4A69E2;        /* 파랑 포인트 */
+      --success:#27AE60;       /* 초록 */
+      --warning:#F2994A;       /* 주황 */
+      --danger:#E74C3C;        /* 빨강 */
+      --neutral:#828282;       /* 중립 회색 */
+      --bg:#F8F9FA;            /* 페이지 배경 */
+      --card:#ffffff;          /* 카드 배경 */
+      --textPrimary:#2C3E50;
+      --textSecondary:#828282;
+      --radius:18px;
+      --shadow:0 5px 15px rgba(0,0,0,.06);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Pretendard, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--textPrimary);
+    }
+
+    .container{
+      max-width:1200px;
+      margin:40px auto;
+      padding:0 24px;
+    }
+
+    /* 헤더 */
+    .header{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .hello{
+      display:flex; align-items:center; gap:8px;
+      font-weight:800; font-size:28px; color:var(--textPrimary);
+    }
+    .btn{
+      display:inline-flex; align-items:center; gap:8px;
+      background:var(--accent); color:#fff; border:0; padding:14px 20px;
+      border-radius:12px; font-weight:700; cursor:pointer;
+      box-shadow:0 4px 10px rgba(74,105,226,.25);
+    }
+    .btn .mi{font-size:20px}
+
+    /* 레이아웃 두 컬럼 */
+    .grid{
+      display:grid; grid-template-columns: 1.5fr 3.5fr; gap:24px; margin-top:24px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    /* 카드 공통 */
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+
+    /* 프로필 카드 */
+    .avatar{
+      width:80px;height:80px;border-radius:50%;
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      display:grid; place-items:center; margin:0 auto 12px;
+    }
+    .avatar .mi{color:var(--accent); font-size:42px}
+    .center{text-align:center}
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color:var(--accent); font-weight:700; padding:6px 10px; border-radius:10px; margin:10px 0 6px;
+    }
+    .muted{color:var(--textSecondary)}
+    .divider{height:1px; background:#ececec; margin:20px 0}
+
+    /* 상/벌점 */
+    .section-title{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px}
+    .row{display:flex; align-items:center}
+    .space{flex:1}
+    .stat-line{display:flex; align-items:center; gap:12px; margin-top:8px}
+    .progress{
+      width:100%; height:8px; background: color-mix(in srgb, var(--accent) 20%, transparent);
+      border-radius:4px; overflow:hidden;
+    }
+    .progress > span{
+      display:block; height:100%; background:var(--accent); width:0%;
+      transition:width .6s ease;
+    }
+
+    /* 석식 카드 */
+    .status-pill{
+      font-weight:800; color:var(--success);
+    }
+    .status-accent{color:var(--accent)}
+    .status-success{color:var(--success)}
+    .status-danger{color:var(--danger)}
+
+    /* 3분할 상태 카드 */
+    .grid-3{
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;
+    }
+    @media (max-width:720px){
+      .grid-3{grid-template-columns:1fr}
+    }
+    .mini-card{padding:20px}
+
+    /* 탭 */
+    .tabs{
+      background:var(--bg);
+      border-radius:14px; padding:0 8px; display:flex; gap:4px;
+    }
+    .tab-btn{
+      flex:1; border:0; background:transparent; padding:14px 10px; cursor:pointer;
+      color:var(--textSecondary); font-weight:800; border-bottom:3px solid transparent; display:flex; gap:8px; justify-content:center;
+    }
+    .tab-btn.active{color:var(--accent); border-bottom-color:var(--accent)}
+    .tabview{height:250px; overflow:auto; padding:20px 6px 0}
+    .detail-item{display:flex; align-items:center; gap:16px; padding:10px 0}
+    .detail-label{width:120px; color:var(--textSecondary); font-weight:800}
+    .mi{font-family:'Material Icons Round'; font-style:normal; font-weight:normal; line-height:1; letter-spacing:normal; text-transform:none; display:inline-block; white-space:nowrap; word-wrap:normal; direction:ltr}
+
+    /* 대화형 다이얼로그 */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.3); display:none; place-items:center; padding:20px; z-index:50;
+    }
+    .modal{background:var(--card); border-radius:20px; width:min(500px, 92vw); max-height:90vh; overflow:auto; padding:24px 24px 20px; box-shadow:var(--shadow)}
+    .modal .icon-wrap{
+      width:72px; height:72px; border-radius:50%; display:grid; place-items:center; margin:0 auto 18px;
+      background: color-mix(in srgb, var(--success) 10%, transparent);
+      color:var(--success);
+    }
+    .modal h3{margin:0 0 10px; text-align:center}
+    .modal .msg{color:var(--textSecondary); text-align:center; line-height:1.6}
+    .modal .actions{margin-top:22px}
+    .w-100{width:100%}
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- 헤더 -->
+    <div class="header">
+      <div class="hello">
+        <span>안녕하세요, <span id="studentNameHeader">학생</span>님!</span>
+        <span style="font-size:26px">👋</span>
+      </div>
+
+      <button class="btn" id="rollcallBtn">
+        <span class="mi">check_circle</span>
+        점호 확인
+      </button>
+    </div>
+
+    <!-- 2컬럼 -->
+    <div class="grid">
+
+      <!-- 좌측: 프로필/상벌점/석식 -->
+      <div class="left">
+        <!-- 프로필 카드 -->
+        <div class="card center" id="profileCard">
+          <div class="avatar"><span class="mi">person</span></div>
+          <div style="font-weight:800; font-size:20px" id="studentName">데이터 없음</div>
+          <div class="muted" style="font-size:14px">학번: <span id="studentId">-</span></div>
+
+          <div class="chip">
+            <span class="mi" style="font-size:18px">school</span>
+            <span id="department">학과 정보 없음</span>
+          </div>
+          <div class="muted" id="dormInfo" style="font-size:15px">호실 정보 없음</div>
+
+          <div class="divider"></div>
+
+          <div class="left-align">
+            <div style="text-align:left; font-weight:800; margin-bottom:12px">룸메이트</div>
+            <div style="display:flex; gap:10px; align-items:center; color:var(--textSecondary)">
+              <span class="mi" style="font-size:22px">groups</span>
+              <div style="text-align:left">
+                <div style="font-weight:700; color:var(--textPrimary)" id="roommate">데이터 없음</div>
+                <div class="muted" style="font-size:12px" id="roommateDept">학과 정보 없음</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 상/벌점 카드 -->
+        <div class="card" style="margin-top:24px">
+          <div class="section-title">
+            <span class="mi">leaderboard</span> 상/벌점 현황
+          </div>
+
+          <!-- 상점 -->
+          <div style="margin-top:20px">
+            <div class="row" style="align-items:center; gap:12px">
+              <span class="mi" style="color:var(--accent)">emoji_events</span>
+              <span class="muted" style="font-weight:600">상점</span>
+              <span class="space"></span>
+              <span id="plusScore" style="font-weight:800; color:var(--accent)">0점</span>
+            </div>
+            <div class="progress" style="margin-top:8px" aria-label="상점 진행바">
+              <span id="plusBar" style="width:0%"></span>
+            </div>
+          </div>
+
+          <!-- 벌점 -->
+          <div style="margin-top:24px">
+            <div class="row" style="align-items:center; gap:12px">
+              <span class="mi" style="color:var(--danger)">warning_amber</span>
+              <span class="muted" style="font-weight:600">벌점</span>
+              <span class="space"></span>
+              <span id="minusScore" style="font-weight:800; color:var(--danger)">0점</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 석식 신청 현황 -->
+        <a href="#!" id="dinnerLink" style="text-decoration:none">
+          <div class="card" style="margin-top:24px; display:flex; align-items:center; gap:16px">
+            <span id="dinnerIcon" class="mi" style="font-size:28px; color:var(--success)">check_circle</span>
+            <div class="space" style="font-weight:800; font-size:18px" id="dinnerTitle">5월 석식</div>
+            <div id="dinnerStatus" class="status-pill status-success">신청 완료</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- 우측: 외박/A·S/상세정보 -->
+      <div class="right">
+        <!-- 외박 -->
+        <div class="card">
+          <div class="row" style="align-items:center; gap:8px">
+            <span class="mi" style="color:var(--accent)">calendar_month</span>
+            <div style="font-weight:800; font-size:20px">외박 신청 현황</div>
+            <span class="space"></span>
+            <div class="muted" style="font-weight:800">총 <span id="outingTotal">0</span>건</div>
+          </div>
+
+          <div class="grid-3" style="margin-top:16px">
+            <div class="card mini-card center">
+              <div class="muted" style="font-size:14px; font-weight:600">승인</div>
+              <div class="stat-line" style="justify-content:center; margin-top:12px">
+                <span class="mi" style="color:var(--success)">check_circle</span>
+                <div style="font-size:22px; color:var(--success); font-weight:800">
+                  <span id="outingApproved">0</span>건
+                </div>
+              </div>
+            </div>
+
+            <div class="card mini-card center">
+              <div class="muted" style="font-size:14px; font-weight:600">대기</div>
+              <div class="stat-line" style="justify-content:center; margin-top:12px">
+                <span class="mi" style="color:var(--accent)">hourglass_empty</span>
+                <div style="font-size:22px; color:var(--accent); font-weight:800">
+                  <span id="outingPending">0</span>건
+                </div>
+              </div>
+            </div>
+
+            <div class="card mini-card center">
+              <div class="muted" style="font-size:14px; font-weight:600">반려</div>
+              <div class="stat-line" style="justify-content:center; margin-top:12px">
+                <span class="mi" style="color:var(--danger)">cancel</span>
+                <div style="font-size:22px; color:var(--danger); font-weight:800">
+                  <span id="outingRejected">0</span>건
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- A/S -->
+        <div class="card" style="margin-top:24px">
+          <div class="row" style="align-items:center; gap:8px">
+            <span class="mi" style="color:var(--warning)">build_circle</span>
+            <div style="font-weight:800; font-size:20px">A/S 신청 현황</div>
+            <span class="space"></span>
+            <div class="muted" style="font-weight:800">총 <span id="asTotal">0</span>건</div>
+          </div>
+
+          <div class="grid-3" style="margin-top:16px">
+            <div class="card mini-card center">
+              <div class="muted" style="font-size:14px; font-weight:600">신청완료</div>
+              <div class="stat-line" style="justify-content:center; margin-top:12px">
+                <span class="mi" style="color:var(--neutral)">note_alt</span>
+                <div style="font-size:22px; color:var(--neutral); font-weight:800">
+                  <span id="asRequested">0</span>건
+                </div>
+              </div>
+            </div>
+
+            <div class="card mini-card center">
+              <div class="muted" style="font-size:14px; font-weight:600">수리중</div>
+              <div class="stat-line" style="justify-content:center; margin-top:12px">
+                <span class="mi" style="color:var(--accent)">construction</span>
+                <div style="font-size:22px; color:var(--accent); font-weight:800">
+                  <span id="asInProgress">0</span>건
+                </div>
+              </div>
+            </div>
+
+            <div class="card mini-card center">
+              <div class="muted" style="font-size:14px; font-weight:600">수리완료</div>
+              <div class="stat-line" style="justify-content:center; margin-top:12px">
+                <span class="mi" style="color:var(--success)">task_alt</span>
+                <div style="font-size:22px; color:var(--success); font-weight:800">
+                  <span id="asCompleted">0</span>건
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 학생 상세정보 (탭) -->
+        <div class="card" style="margin-top:24px">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="tab-basic">
+              <span class="mi">person_pin</span> 기본 정보
+            </button>
+            <button class="tab-btn" data-tab="tab-contact">
+              <span class="mi">contact_phone</span> 연락처/환불 정보
+            </button>
+          </div>
+
+          <div class="tabview">
+            <!-- tab content -->
+            <div id="tab-basic">
+              <div class="detail-item">
+                <span class="mi muted">badge</span>
+                <div class="detail-label">성명</div>
+                <div id="d_name">데이터 없음</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">school</span>
+                <div class="detail-label">학과</div>
+                <div id="d_dept">데이터 없음</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">home_work</span>
+                <div class="detail-label">기숙사</div>
+                <div id="d_dorm">-</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">meeting_room</span>
+                <div class="detail-label">호실</div>
+                <div id="d_room">-</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">smoking_rooms</span>
+                <div class="detail-label">흡연여부</div>
+                <div id="d_smoke">-</div>
+              </div>
+            </div>
+
+            <div id="tab-contact" style="display:none">
+              <div class="detail-item">
+                <span class="mi muted">phone_iphone</span>
+                <div class="detail-label">연락처</div>
+                <div id="d_phone">-</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">family_restroom</span>
+                <div class="detail-label">보호자 연락처</div>
+                <div id="d_parPhone">-</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">account_balance</span>
+                <div class="detail-label">환불 은행</div>
+                <div id="d_bank">-</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">payment</span>
+                <div class="detail-label">계좌번호</div>
+                <div id="d_acc">-</div>
+              </div>
+              <div class="detail-item">
+                <span class="mi muted">person_search</span>
+                <div class="detail-label">예금주</div>
+                <div id="d_holder">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <div class="icon-wrap"><span class="mi">check_circle</span></div>
+      <h3 id="modalTitle">점호 완료 🎉</h3>
+      <div class="msg" id="modalMsg">점호가 완료되었습니다!<br>건물: 본관<br>거리: 0.02km<br>시간: 21:03</div>
+      <div class="actions">
+        <button class="btn w-100" id="modalClose"><span class="mi">done</span>확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ======= 데모를 위한 가짜 데이터 (Flutter Provider/HTTP 응답 대체) =======
+    const data = {
+      student:{
+        name: "홍길동",
+        studentId: "20250001",
+        department: "간호학과",
+        roomNum: "3-412",
+        roommate: "김민서",
+        roommateDept: "간호학과",
+        phoneNum: "010-1234-5678",
+        parPhone: "010-8888-9999",
+        paybackBank: "국민",
+        paybackNum: "123456-01-789012",
+        paybackName: "홍길동",
+        smoking: "비흡연"
+      },
+      points:{ plus: 37, minus: 4 },
+      overnight:{ total: 7, approved: 5, pending: 1, rejected: 1 },
+      as:{ total: 3, requested: 1, inProgress: 1, completed: 1 },
+      dinner:{ status:"completed" } // notApplied | pending | completed
+    };
+
+    // ======= 초기 렌더링 =======
+    function qs(sel){return document.querySelector(sel)}
+
+    // 이름/헤더
+    qs('#studentNameHeader').textContent = data.student.name;
+    qs('#studentName').textContent = data.student.name;
+    qs('#studentId').textContent = data.student.studentId ?? '-';
+    qs('#department').textContent = data.student.department ?? '학과 정보 없음';
+
+    // 호실/동
+    const room = data.student.roomNum;
+    const dormInfo = room ? `${room[0]}동 ${room}` : '호실 정보 없음';
+    qs('#dormInfo').textContent = dormInfo;
+
+    // 룸메
+    qs('#roommate').textContent = data.student.roommate ?? '데이터 없음';
+    qs('#roommateDept').textContent = data.student.roommateDept ?? '학과 정보 없음';
+
+    // 상/벌점
+    qs('#plusScore').textContent = `${data.points.plus}점`;
+    qs('#minusScore').textContent = `${data.points.minus}점`;
+    const percent = Math.max(0, Math.min(1, data.points.plus / 100));
+    requestAnimationFrame(()=>{ qs('#plusBar').style.width = (percent*100) + '%' });
+
+    // 외박
+    qs('#outingTotal').textContent = data.overnight.total;
+    qs('#outingApproved').textContent = data.overnight.approved;
+    qs('#outingPending').textContent = data.overnight.pending;
+    qs('#outingRejected').textContent = data.overnight.rejected;
+
+    // A/S
+    qs('#asTotal').textContent = data.as.total;
+    qs('#asRequested').textContent = data.as.requested;
+    qs('#asInProgress').textContent = data.as.inProgress;
+    qs('#asCompleted').textContent = data.as.completed;
+
+    // 탭
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        tabs.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('#tab-basic,#tab-contact').forEach(el=>el.style.display='none');
+        document.getElementById(btn.dataset.tab).style.display='block';
+      })
+    });
+
+    // 상세 정보 렌더
+    qs('#d_name').textContent = data.student.name ?? '데이터 없음';
+    qs('#d_dept').textContent = data.student.department ?? '데이터 없음';
+    qs('#d_dorm').textContent = room ? `${room[0]}동` : '-';
+    qs('#d_room').textContent = room ?? '-';
+    qs('#d_smoke').textContent = data.student.smoking ?? '-';
+    qs('#d_phone').textContent = data.student.phoneNum ?? '-';
+    qs('#d_parPhone').textContent = data.student.parPhone ?? '-';
+    qs('#d_bank').textContent = data.student.paybackBank ?? '-';
+    qs('#d_acc').textContent = data.student.paybackNum ?? '-';
+    qs('#d_holder').textContent = data.student.paybackName ?? '-';
+
+    // 석식 상태
+    const now = new Date();
+    const nextMonth = now.getMonth()+2; // 사람 친화적 표기
+    qs('#dinnerTitle').textContent = `${nextMonth}월 석식`;
+
+    const dinnerIcon = qs('#dinnerIcon');
+    const dinnerStatus = qs('#dinnerStatus');
+
+    const setDinner = (state)=>{
+      dinnerStatus.classList.remove('status-success','status-accent','status-danger');
+      if(state==='completed'){
+        dinnerIcon.textContent='check_circle';
+        dinnerIcon.style.color='var(--success)';
+        dinnerStatus.textContent='신청 완료';
+        dinnerStatus.classList.add('status-success');
+        qs('#dinnerLink').onclick = null;
+      }else if(state==='pending'){
+        dinnerIcon.textContent='hourglass_empty';
+        dinnerIcon.style.color='var(--success)';
+        dinnerStatus.textContent='신청 상태';
+        dinnerStatus.classList.add('status-success');
+        qs('#dinnerLink').onclick = e=>{ e.preventDefault(); alert('결제 확인 대기중입니다.'); };
+      }else{ // notApplied
+        dinnerIcon.textContent='edit_calendar';
+        dinnerIcon.style.color='var(--accent)';
+        dinnerStatus.textContent='신청 가능';
+        dinnerStatus.classList.add('status-accent');
+        qs('#dinnerLink').onclick = e=>{
+          e.preventDefault();
+          alert('석식 신청 페이지로 이동한다고 가정!');
+        };
+      }
+    };
+    setDinner(data.dinner.status);
+
+    // 점호 모달(데모)
+    const modal = qs('#modal');
+    qs('#rollcallBtn').addEventListener('click', ()=>{
+      qs('#modalTitle').textContent = '점호 완료 🎉';
+      qs('#modalMsg').innerHTML = '점호가 완료되었습니다!<br>건물: 기숙사 A동<br>거리: 0.03km<br>시간: ' + new Date().toTimeString().slice(0,5);
+      modal.style.display='grid';
+    });
+    qs('#modalClose').addEventListener('click', ()=> modal.style.display='none');
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.style.display='none'; });
+  </script>
+</body>
+</html>
